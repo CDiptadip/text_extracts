@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Upload and Read Documents</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+
+<body>
+
+    <h1>Upload and Read Documents</h1>
+
+ 
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <div class="file-type-dropdown">
+
+            <label for="file-type">Select File Type:</label>
+
+            <select id="file-type" name="file-type">
+
+                <option value="select" selected disabled>Select</option>
+
+                <option value="pdf">PDF</option>
+
+                <option value="docx">DOCX</option>
+
+                <option value="xlsx">XLSX</option>
+
+                <option value="pptx">PPTX</option>
+
+            </select>
+
+        </div>
+
+        <input type="file" id="file-input" name="file">
+
+        <input type="submit" value="Upload and Read">
+
+    </form>
+
+ 
+
+    {% if text %}
+
+    <h2>Text from the uploaded document:</h2>
+
+    <pre id="extracted-text">{{ text }}</pre>
+
+    <button id="text-copy-button" onclick="copyTextToClipboard()">Copy Text to Clipboard</button>
+
+    {% endif %}
+
+ 
+
+    {% if data %}
+
+    <h2>Data from the uploaded Excel file:</h2>
+
+    <table>
+
+        {% for row in data %}
+
+        <tr>
+
+            {% for cell in row %}
+
+            <td>{{ cell }}</td>
+
+            {% endfor %}
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <button id="excel-copy-button" onclick="copyExcelToClipboard()">Copy Excel Data to Clipboard</button>
+
+    {% endif %}
+
+ 
+
+    {% if pptx_text %}
+
+    <h2>Text from the uploaded PowerPoint file:</h2>
+
+    <pre id="extracted-pptx-text">{{ pptx_text }}</pre>
+
+    <button id="pptx-copy-button" onclick="copyPptxToClipboard()">Copy PowerPoint Text to Clipboard</button>
+
+    {% endif %}
+
+ 
+
+    <script>
+
+        function copyTextToClipboard() {
+
+            var textElement = document.getElementById('extracted-text');
+
+            var textToCopy = textElement.innerText;
+
+ 
+
+            if (navigator.clipboard) {
+
+                navigator.clipboard.writeText(textToCopy)
+
+                    .then(function() {
+
+                        alert("Text copied to clipboard!");
+
+                    })
+
+                    .catch(function(error) {
+
+                        console.error("Error copying text: ", error);
+
+                    });
+
+            } else {
+
+                // Fallback for browsers that don't support the Clipboard API
+
+                var textArea = document.createElement("textarea");
+
+                textArea.value = textToCopy;
+
+                document.body.appendChild(textArea);
+
+                textArea.select();
+
+                document.execCommand('copy');
+
+                document.body.removeChild(textArea);
+
+                alert("Text copied to clipboard!");
+
+            }
+
+        }
+
+ 
+
+        function copyExcelToClipboard() {
+
+            var table = document.querySelector('table');
+
+            var range = document.createRange();
+
+            range.selectNode(table);
+
+            window.getSelection().addRange(range);
+
+ 
+
+            try {
+
+                var successful = document.execCommand('copy');
+
+                var message = successful ? "Excel data copied to clipboard!" : "Failed to copy Excel data.";
+
+                alert(message);
+
+            } catch (err) {
+
+                console.error("Error copying Excel data: ", err);
+
+            }
+
+ 
+
+            window.getSelection().removeAllRanges();
+
+        }
+
+        const fileTypeSelect = document.getElementById("file-type");
+
+        const fileInput = document.getElementById("file-input");
+
+ 
+
+        // Add an event listener to the dropdown
+
+        fileTypeSelect.addEventListener("change", function () {
+
+            const selectedFileType = fileTypeSelect.value;
+
+ 
+
+            // Define file type mappings
+
+            const fileTypeMappings = {
+
+                pdf: ".pdf",
+
+                docx: ".docx",
+
+                xlsx: ".xlsx",
+
+                pptx: ".pptx"
+
+            };
+
+ 
+
+            // Set the accept attribute based on the selected file type
+
+            if (fileTypeMappings[selectedFileType]) {
+
+                fileInput.setAttribute("accept", fileTypeMappings[selectedFileType]);
+
+            } else {
+
+                // If an unsupported file type is selected, remove the accept attribute
+
+                fileInput.removeAttribute("accept");
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
